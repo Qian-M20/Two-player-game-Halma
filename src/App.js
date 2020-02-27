@@ -10,7 +10,8 @@ let theOriginalY;
 let theMoveToX;
 let theMoveToY;
 let occupiedSpaces=[];
-let validPath = [];
+// let validPath = [];
+let adjSpaces = [];
 
 
 class App extends Component {
@@ -63,7 +64,7 @@ class App extends Component {
           locationY: y,
           currentX: x,
           currentY: y,
-          validPath: [],
+          // validPath: [],
           style:{
             width:`9vh`,
             height:`9vh`,
@@ -91,7 +92,7 @@ class App extends Component {
           locationY: y,
           currentX: x,
           currentY: y,
-          validPath: [],
+          // validPath: [],
           style:{
             width:`9vh`,
             height:`9vh`,
@@ -112,7 +113,6 @@ class App extends Component {
     return {chesses};
   }
 
-  // when click on any space, file the following event
   chessMoveTo = (locationX, locationY, isValidPath) => (e) => {
     
 
@@ -157,22 +157,18 @@ class App extends Component {
 
   }
 
-  // when click on any chess, file the following event
   selectChess = (key,locationX, locationY, currentX, currentY) => (e) => {
 
     // indicate which chess is being selected
     const selectedChess = document.querySelector(`.selectedChess`);
     if (selectedChess) {
       selectedChess.classList.remove('selectedChess');
-      // selectedChess.style.boxShadow = 'none';
     }
-    // e.target.style.boxShadow = "0px 0px 10px 5px gray";
     e.target.classList.add('selectedChess');
 
     // store the current location into global variable
     theOriginalX = locationX;
     theOriginalY = locationY;
-    console.log(`${locationX} , ${locationY} , chess selected`);
 
     // change the state of the chess to indicate this is the one that's being selected
     this.setState({
@@ -196,51 +192,157 @@ class App extends Component {
 
     // find out the valid destination spaces
     this.validPathCheck(currentX, currentY);
-      // first check
   }
 
+  selfCheck = (x,y) => {
+    if(x>0 && x<9 && y>0 && y<9) {
+      return true;
+    }
+  }
+  // store the ajacent spaces into adjSpaces
+  adjSpaceCheck = (x,y) => {
+    adjSpaces = [];
+    if(x-1>0) {
+      adjSpaces.push(`(${x-1},${y})`);
+      if(y+1<9){
+        adjSpaces.push(`(${x-1},${y+1})`);
+      }
+      if(y-1>0){
+        adjSpaces.push(`(${x-1},${y-1})`);
+      }
+    }
+
+    if(x+1<9) {
+      adjSpaces.push(`(${x+1},${y})`);
+      if(y+1<9){
+        adjSpaces.push(`(${x+1},${y+1})`);
+      }
+      if(y-1>0){
+        adjSpaces.push(`(${x+1},${y-1})`);
+      }
+    }
+
+    if(y-1>0) {
+      adjSpaces.push(`(${x},${y-1})`);
+    }
+
+    if(y+1<9) {
+      adjSpaces.push(`(${x},${y+1})`);
+    }
+
+    console.log(adjSpaces);
+
+    
+  }
+
+  // occupiedCheck to see if the spaces is occupied or not, if not, than make the space valid, if it is occupied, then nothing happend
+  occupiedCheck = (array) => {
+    array.map((item) => {
+      this.setState({
+        spaces: this.state.spaces.map((space)=>{
+            if(space.location === item){
+              // console.log(space);
+              if(space.isOccupied === false) {
+                // validPath.push(space);
+                space.isValidPath = true;
+                space.className = `chess isValidPath`;
+              }
+            }
+            return space
+        })
+      })
+    })
+  }
+
+  nextPossbileMoveCheck = (array, x, y) => {
+    let nextPossbileMove = [];
+    array.map((item) => {
+      if(item === `(${x-1},${y-1})`){
+        nextPossbileMove.push(`(${x-2},${y-2})`)
+      }else if(item === `(${x-1},${y})`){
+        nextPossbileMove.push(`(${x-2},${y})`)
+      }else if(item === `(${x-1},${y+1})`){
+        nextPossbileMove.push(`(${x-2},${y+2})`)
+      }else if(item === `(${x+1},${y})`){
+        nextPossbileMove.push(`(${x+2},${y})`)
+      }else if(item === `(${x+1},${y+1})`){
+        nextPossbileMove.push(`(${x+2},${y+2})`)
+      }else if(item === `(${x+1},${y-1})`){
+        nextPossbileMove.push(`(${x+2},${y-2})`)
+      }else if(item === `(${x},${y-1})`){
+        nextPossbileMove.push(`(${x},${y-2})`)
+      }else if(item === `(${x},${y+1})`){
+        nextPossbileMove.push(`(${x},${y+2})`)
+      }
+    })
+
+    console.log(`next possible move ${nextPossbileMove}`);
+    this.nextValidPathCheck(nextPossbileMove);
+
+  }
+
+  nextValidPathCheck = (array) => {
+    let nextValidPath = [];
+    let adjOccupiedSpaces = [];
+
+    array.map((item) => {
+      this.setState({
+        spaces: this.state.spaces.map((space)=>{
+            if(space.location === item){
+              // console.log(space);
+              if(space.isOccupied === false) {
+                nextValidPath.push(space);
+                space.isValidPath = true;
+                space.className = `chess isValidPath`;
+              }
+            }
+            return space
+        })
+      })
+    })
+
+    nextValidPath.forEach((item)=> {
+      this.adjSpaceCheck(item); /*this will return back a new array of adjSpaces[]*/
+      // for the new check if the spaces in the ajacent spaces is occupied or not, if it's not occuppied, than make it valid, if it's occupied, position the next possible move
+      adjSpaces.map((item) => {
+        this.setState({
+          spaces: this.state.spaces.map((space)=>{
+              if(space.location === item){
+                // console.log(space);
+                if(space.isOccupied === true) {
+                  adjOccupiedSpaces.push(item);
+                }
+              }
+              return space
+          })
+        })
+        this.nextPossbileMoveCheck(adjOccupiedSpaces,parseInt(item.slice(1,1)), parseInt(item.slice(3,1)));
+      })
+    })
+
+    
+
+  }
+
+  
   validPathCheck = (x,y) => {
-      // round 1 check
-      let firstRoundCheck = [];
-      if(x-1>0) {
-        firstRoundCheck.push(`(${x-1},${y})`);
-        if(y+1<9){
-          firstRoundCheck.push(`(${x-1},${y+1})`);
-        }
-        if(y-1>0){
-          firstRoundCheck.push(`(${x-1},${y-1})`);
-        }
-      }
+      
+      let adjOccupiedSpaces = [];
 
-      if(x+1<9) {
-        firstRoundCheck.push(`(${x+1},${y})`);
-        if(y+1<9){
-          firstRoundCheck.push(`(${x+1},${y+1})`);
-        }
-        if(y-1>0){
-          firstRoundCheck.push(`(${x+1},${y-1})`);
-        }
-      }
-
-      if(y-1>0) {
-        firstRoundCheck.push(`(${x},${y-1})`);
-      }
-
-      if(y+1<9) {
-        firstRoundCheck.push(`(${x},${y+1})`);
-      }
-
-      console.log(firstRoundCheck);
-
-      firstRoundCheck.map((item) => {
+      this.adjSpaceCheck (x, y);
+      
+      // check if the spaces in the ajacent spaces is occupied or not, if it's not occuppied, than make it valid, if it's occupied, position the next possible move
+      adjSpaces.map((item) => {
           this.setState({
             spaces: this.state.spaces.map((space)=>{
                 if(space.location === item){
-                  console.log(space);
+                  // console.log(space);
                   if(space.isOccupied === false) {
-                    validPath.push(space);
+                    // validPath.push(space);
                     space.isValidPath = true;
                     space.className = `chess isValidPath`;
+                  }else{
+                    adjOccupiedSpaces.push(item);
                   }
                 }
                 return space
@@ -248,7 +350,9 @@ class App extends Component {
           })
       })
 
-      console.log(validPath);
+      console.log(adjOccupiedSpaces);
+
+      this.nextPossbileMoveCheck(adjOccupiedSpaces,x,y);
   }
 
 
