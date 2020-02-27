@@ -15,6 +15,7 @@ let adjSpaces = [];
 let nextValidPath = [];
 
 
+
 class App extends Component {
 
   constructor (props){
@@ -32,6 +33,7 @@ class App extends Component {
       for (let x=1; x<9; x++){
         spaces.push({
           className: `space`,
+          value:``,
           key: `space-${x}-${y}`,
           location: `(${x},${y})`,
           locationX: x,
@@ -61,6 +63,7 @@ class App extends Component {
           key: `chess-${x}-${y}`,
           // the locationX and locationY needs to be dynamically changed
           isSelected:false,
+          value:'green',
           locationX: x,
           locationY: y,
           currentX: x,
@@ -89,6 +92,7 @@ class App extends Component {
           key: `chess-${x}-${y}`,
           // the locationX and locationY needs to be dynamically changed
           isSelected:false,
+          value:`black`,
           locationX: x,
           locationY: y,
           currentX: x,
@@ -267,7 +271,7 @@ class App extends Component {
         })
     })
 
-    console.log(nextValidPath);
+    // console.log(nextValidPath);
 
   }
 
@@ -295,7 +299,7 @@ class App extends Component {
       }
     })
 
-    console.log(`next possible move 0 ${nextPossbileMove0}`);
+    // console.log(`next possible move 0 ${nextPossbileMove0}`);
 
     // 把墙外的可能的点都淘汰，剩下的都是墙内的可能的点
     nextPossbileMove0.forEach((item)=>{
@@ -304,7 +308,7 @@ class App extends Component {
       }
     })
 
-    console.log(`next possible move 1 ${nextPossbileMove}`);
+    // console.log(`next possible move 1 ${nextPossbileMove}`);
 
     // 对墙内可能的点，进行occupied排查
     if(nextPossbileMove.length>0) {
@@ -345,7 +349,7 @@ class App extends Component {
       adjSpaces.push(`(${x},${y+1})`);
     }
 
-    console.log(adjSpaces);
+    // console.log(adjSpaces);
 
     // this.getAdjOccupiedSpaces (adjSpaces, x, y);
   }
@@ -378,7 +382,7 @@ class App extends Component {
           })
       })
 
-      console.log(adjOccupiedSpaces);
+      // console.log(adjOccupiedSpaces);
       // 把附近的occupied的格子储存放到一个数组中，然后计算这颗棋子要以这些格子作为基点分别怎么跳
       if(adjOccupiedSpaces.length>0){
         this.nextPossbileMoveCheck(adjOccupiedSpaces,x,y);
@@ -395,6 +399,7 @@ class App extends Component {
         this.state.chesses.map((chess)=>{
           if(space.locationX === chess.currentX && space.locationY === chess.currentY){
             occupiedSpaces.push(space);
+            space.value = chess.value;
           }
         })
     });
@@ -413,6 +418,43 @@ class App extends Component {
     return occupiedSpaces;
   }
 
+  // check if we have a winner
+  checkIfWinner = () => {
+    let blackBonusPoints = 0;
+    let greenBonusPoints = 0;
+
+    for (let y=1; y<5; y++) {
+      for (let x=1; x<(6-y); x++){
+          const theSpace = this.state.spaces.filter( space => space.locationX === x && space.locationY === y);
+          // console.log(theSpace);
+          if(theSpace[0].isOccupied && theSpace[0].value === 'black') {
+            blackBonusPoints ++;
+          }
+      }
+    }
+
+    for (let y=5; y<9; y++) {
+      for (let x=8; x>(12-y); x--){
+          const theSpace = this.state.spaces.filter( space => space.locationX === x && space.locationY === y);
+          // console.log(theSpace);
+          if(theSpace[0].isOccupied && theSpace[0].value === 'green') {
+            greenBonusPoints ++;
+          }
+      }
+    }
+
+    if(blackBonusPoints === 10){
+        console.log('Black wins!');
+        return;
+    }
+
+    if(greenBonusPoints === 10){
+      console.log('Green wins!');
+      return;
+    }
+    
+  }
+
   componentDidMount() {
     this.setState({
       ...this.getSpaces(),
@@ -420,7 +462,10 @@ class App extends Component {
     });
 
     // update the isOccupied state of spaces constantly
-    setInterval(this.checkIfOccupied, 500);
+    setInterval(this.checkIfOccupied, 100);
+
+    // check winners constantly
+    setInterval(this.checkIfWinner, 100);
   }
 
   render() {
