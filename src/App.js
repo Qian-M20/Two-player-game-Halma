@@ -12,6 +12,7 @@ let theMoveToY;
 let occupiedSpaces=[];
 // let validPath = [];
 let adjSpaces = [];
+let nextValidPath = [];
 
 
 class App extends Component {
@@ -121,7 +122,6 @@ class App extends Component {
       theMoveToY = locationY;
       distanceX = (theMoveToX - theOriginalX)*10;
       distanceY = (theMoveToY - theOriginalY)*10;
-      console.log(`${distanceX}`, `${distanceY}`);
       const selectedChess = document.querySelector(`.selectedChess`);
       if (selectedChess) {
         // find out if the clicked space is valid
@@ -181,7 +181,7 @@ class App extends Component {
       })
     });
 
-    // update the isValidPath state of spaces
+    // update the isValidPath state of spaces， 每次点击一颗棋子，都要把所有空格的isValidPath先统一改成false
     this.setState({
       spaces: this.state.spaces.map((space)=>{
         space.isValidPath = false;
@@ -198,6 +198,121 @@ class App extends Component {
     if(x>0 && x<9 && y>0 && y<9) {
       return true;
     }
+  }
+ 
+
+  // occupiedCheck to see if the spaces is occupied or not, if not, than make the space valid, if it is occupied, then nothing happend
+  occupiedCheck = (array) => {
+    array.map((item) => {
+      this.setState({
+        spaces: this.state.spaces.map((space)=>{
+            if(space.location === item){
+              // console.log(space);
+              if(space.isOccupied === false) {
+                // validPath.push(space);
+                space.isValidPath = true;
+                space.className = `chess isValidPath`;
+              }
+            }
+            return space
+        })
+      })
+    })
+  }
+
+
+
+
+  getAdjOccupiedSpaces = (array,x,y) => {
+    let adjOccupiedSpaces =[];
+
+    array.map((item) => {
+        this.setState({
+          spaces: this.state.spaces.map((space)=>{
+              if(space.location === item){
+                // console.log(space);
+                if(space.isOccupied === true) {
+                  adjOccupiedSpaces.push(item);
+                }
+              }
+              return space
+          })
+        })
+    })
+
+    this.nextPossbileMoveCheck(adjOccupiedSpaces,x,y);
+
+  }
+
+  // 传入一组墙内的有可能跳进去的目标点，检查这些目标点是否occupied，把空的格子放到一个数组中nextValidPath,对这个数组内的每个格子，设想他们都是棋子，对他们进行下一轮检测
+  nextValidPathCheck = (array) => {
+    
+
+    array.map((item)=>{
+        this.setState({
+          spaces: this.state.spaces.map((space)=>{
+              if(space.location === item){
+                // console.log(space);
+                // 如果空格上没有棋子并且这个空格不是当前已经跳过的路径，那么收入nextValidPath
+                if(space.isOccupied === false && !nextValidPath.includes(item)) {
+                  nextValidPath.push(item);
+                  space.isValidPath = true;
+                  space.className = `chess isValidPath`;
+                  this.adjSpaceCheck(parseInt(item[1]), parseInt(item[3]));
+                  this.getAdjOccupiedSpaces (adjSpaces, parseInt(item[1]), parseInt(item[3]));
+                }
+              }
+              return space
+          })
+        })
+    })
+
+    console.log(nextValidPath);
+
+  }
+
+  // 传入一组身边的occupied的格子，计算以这些格子为基点，分别怎么跳
+  nextPossbileMoveCheck = (array, x, y) => {
+    let nextPossbileMove0 = [];
+    let nextPossbileMove = [];
+    array.map((item) => {
+      if(item === `(${x-1},${y-1})`){
+        nextPossbileMove0.push(`(${x-2},${y-2})`)
+      }else if(item === `(${x-1},${y})`){
+        nextPossbileMove0.push(`(${x-2},${y})`)
+      }else if(item === `(${x-1},${y+1})`){
+        nextPossbileMove0.push(`(${x-2},${y+2})`)
+      }else if(item === `(${x+1},${y})`){
+        nextPossbileMove0.push(`(${x+2},${y})`)
+      }else if(item === `(${x+1},${y+1})`){
+        nextPossbileMove0.push(`(${x+2},${y+2})`)
+      }else if(item === `(${x+1},${y-1})`){
+        nextPossbileMove0.push(`(${x+2},${y-2})`)
+      }else if(item === `(${x},${y-1})`){
+        nextPossbileMove0.push(`(${x},${y-2})`)
+      }else if(item === `(${x},${y+1})`){
+        nextPossbileMove0.push(`(${x},${y+2})`)
+      }
+    })
+
+    console.log(`next possible move 0 ${nextPossbileMove0}`);
+
+    // 把墙外的可能的点都淘汰，剩下的都是墙内的可能的点
+    nextPossbileMove0.forEach((item)=>{
+      if(this.selfCheck(parseInt(item[1]), parseInt(item[3]))===true){
+        nextPossbileMove.push(item);
+      }
+    })
+
+    console.log(`next possible move 1 ${nextPossbileMove}`);
+
+    // 对墙内可能的点，进行occupied排查
+    if(nextPossbileMove.length>0) {
+      this.nextValidPathCheck(nextPossbileMove)
+    }else {
+      return;
+    }
+    
   }
   // store the ajacent spaces into adjSpaces
   adjSpaceCheck = (x,y) => {
@@ -232,104 +347,17 @@ class App extends Component {
 
     console.log(adjSpaces);
 
-    
+    // this.getAdjOccupiedSpaces (adjSpaces, x, y);
   }
 
-  // occupiedCheck to see if the spaces is occupied or not, if not, than make the space valid, if it is occupied, then nothing happend
-  occupiedCheck = (array) => {
-    array.map((item) => {
-      this.setState({
-        spaces: this.state.spaces.map((space)=>{
-            if(space.location === item){
-              // console.log(space);
-              if(space.isOccupied === false) {
-                // validPath.push(space);
-                space.isValidPath = true;
-                space.className = `chess isValidPath`;
-              }
-            }
-            return space
-        })
-      })
-    })
-  }
-
-  nextPossbileMoveCheck = (array, x, y) => {
-    let nextPossbileMove = [];
-    array.map((item) => {
-      if(item === `(${x-1},${y-1})`){
-        nextPossbileMove.push(`(${x-2},${y-2})`)
-      }else if(item === `(${x-1},${y})`){
-        nextPossbileMove.push(`(${x-2},${y})`)
-      }else if(item === `(${x-1},${y+1})`){
-        nextPossbileMove.push(`(${x-2},${y+2})`)
-      }else if(item === `(${x+1},${y})`){
-        nextPossbileMove.push(`(${x+2},${y})`)
-      }else if(item === `(${x+1},${y+1})`){
-        nextPossbileMove.push(`(${x+2},${y+2})`)
-      }else if(item === `(${x+1},${y-1})`){
-        nextPossbileMove.push(`(${x+2},${y-2})`)
-      }else if(item === `(${x},${y-1})`){
-        nextPossbileMove.push(`(${x},${y-2})`)
-      }else if(item === `(${x},${y+1})`){
-        nextPossbileMove.push(`(${x},${y+2})`)
-      }
-    })
-
-    console.log(`next possible move ${nextPossbileMove}`);
-    this.nextValidPathCheck(nextPossbileMove);
-
-  }
-
-  nextValidPathCheck = (array) => {
-    let nextValidPath = [];
-    let adjOccupiedSpaces = [];
-
-    array.map((item) => {
-      this.setState({
-        spaces: this.state.spaces.map((space)=>{
-            if(space.location === item){
-              // console.log(space);
-              if(space.isOccupied === false) {
-                nextValidPath.push(space);
-                space.isValidPath = true;
-                space.className = `chess isValidPath`;
-              }
-            }
-            return space
-        })
-      })
-    })
-
-    nextValidPath.forEach((item)=> {
-      this.adjSpaceCheck(item); /*this will return back a new array of adjSpaces[]*/
-      // for the new check if the spaces in the ajacent spaces is occupied or not, if it's not occuppied, than make it valid, if it's occupied, position the next possible move
-      adjSpaces.map((item) => {
-        this.setState({
-          spaces: this.state.spaces.map((space)=>{
-              if(space.location === item){
-                // console.log(space);
-                if(space.isOccupied === true) {
-                  adjOccupiedSpaces.push(item);
-                }
-              }
-              return space
-          })
-        })
-        this.nextPossbileMoveCheck(adjOccupiedSpaces,parseInt(item.slice(1,1)), parseInt(item.slice(3,1)));
-      })
-    })
-
-    
-
-  }
-
-  
+  // 在点完棋子后立马运行，而且只运行一次
   validPathCheck = (x,y) => {
       
       let adjOccupiedSpaces = [];
 
-      this.adjSpaceCheck (x, y);
+      nextValidPath = [];
+
+      this.adjSpaceCheck (x, y); /*返回adjSpaces[], 不可能是空值 */
       
       // check if the spaces in the ajacent spaces is occupied or not, if it's not occuppied, than make it valid, if it's occupied, position the next possible move
       adjSpaces.map((item) => {
@@ -351,8 +379,12 @@ class App extends Component {
       })
 
       console.log(adjOccupiedSpaces);
-
-      this.nextPossbileMoveCheck(adjOccupiedSpaces,x,y);
+      // 把附近的occupied的格子储存放到一个数组中，然后计算这颗棋子要以这些格子作为基点分别怎么跳
+      if(adjOccupiedSpaces.length>0){
+        this.nextPossbileMoveCheck(adjOccupiedSpaces,x,y);
+      }else{
+        return;
+      }
   }
 
 
@@ -415,7 +447,7 @@ class App extends Component {
           style={{...style
           }}
         >
-          {key}
+          {/* {key} */}
         </div >
       return reactDom;
     })
