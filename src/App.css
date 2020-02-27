@@ -38,3 +38,13 @@
 .chess {
   color:white;
 }
+
+.isValidPath {
+  background: url(./plus.svg);
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+.selectedChess {
+  box-shadow: 0px 0px 10px 5px gray;
+}
