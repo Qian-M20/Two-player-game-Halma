@@ -13,6 +13,8 @@ let occupiedSpaces=[];
 // let validPath = [];
 let adjSpaces = [];
 let nextValidPath = [];
+let greenWins = false;
+let blackWins = false;
 
 
 
@@ -63,6 +65,7 @@ class App extends Component {
           key: `chess-${x}-${y}`,
           // the locationX and locationY needs to be dynamically changed
           isSelected:false,
+          className: `chess greenChess`,
           value:'green',
           locationX: x,
           locationY: y,
@@ -91,6 +94,7 @@ class App extends Component {
         chesses.push({
           key: `chess-${x}-${y}`,
           // the locationX and locationY needs to be dynamically changed
+          className: `chess blackChess`,
           isSelected:false,
           value:`black`,
           locationX: x,
@@ -444,12 +448,14 @@ class App extends Component {
     }
 
     if(blackBonusPoints === 10){
-        console.log('Black wins!');
+        blackWins = true;
+        this.gameOver();
         return;
     }
 
     if(greenBonusPoints === 10){
-      console.log('Green wins!');
+      greenWins = true;
+      this.gameOver();
       return;
     }
     
@@ -468,6 +474,45 @@ class App extends Component {
     setInterval(this.checkIfWinner, 100);
   }
 
+
+  gameStart() {
+    const wallPaper = document.querySelector('.wallPaper');
+    const blackWinMsg = document.querySelector('.blackWins');
+    const greenWinMsg = document.querySelector('.greenWins');
+    
+    wallPaper.style.display = 'none';
+    blackWinMsg.style.display = 'none';
+    greenWinMsg.style.display = 'none';
+    greenWins = false;
+    blackWins = false;
+
+  }
+
+  gameOver() {
+    const wallPaper = document.querySelector('.wallPaper');
+    const blackWinMsg = document.querySelector('.blackWins');
+    const greenWinMsg = document.querySelector('.greenWins');
+    const restart = document.querySelector('.restart');
+    const start = document.querySelector('.start');
+
+    wallPaper.style.display = 'flex';
+    restart.style.display = 'block';
+    start.style.display = 'none';
+
+    if (blackWins) {
+      blackWinMsg.style.display = 'block';
+    }
+    if (greenWins) {
+      greenWinMsg.style.display = 'block';
+    }
+
+  }
+
+  gameRestart() {
+    window.location.reload(false);
+  }
+
+
   render() {
     let {spaces, chesses} = this.state;
     let positionSpaces = spaces.map((space,index)=> { 
@@ -484,10 +529,10 @@ class App extends Component {
     });
 
     let positionChesses = chesses.map((chess,index)=> { 
-      let {key, style, locationX, locationY, currentX, currentY} = chess;
+      let {key, style, locationX, locationY, currentX, currentY, className} = chess;
       let reactDom = <div
           key={key}
-          className="chess"
+          className={className}
           onClick={this.selectChess(key,locationX,locationY, currentX, currentY)}
           style={{...style
           }}
@@ -499,6 +544,13 @@ class App extends Component {
 
     return (
       <div className="App">
+        <div className="wallPaper">
+          <h1 className="greenWins">Congrats! Green Wins!</h1>
+          <h1 className="blackWins">Congrats! Black Wins!</h1>
+          <button className="start" onClick={this.gameStart}>PRESS START</button>
+          <button className="restart" onClick={this.gameRestart}>RESTART</button>
+        </div>
+
         <div className="boardWrapper">
           <div className="board">
               {positionSpaces}

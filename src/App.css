@@ -4,6 +4,7 @@
   box-sizing: content-box;
 }
 
+
 .App {
   width:100vw;
   height:100vh;
@@ -14,6 +15,53 @@
   background-repeat: no-repeat;
   background-size: cover;
 }
+
+.wallPaper {
+  width:100vw;
+  height:100vh;
+  position: absolute;
+  background-color: rgba(250,250,250,.5);
+  z-index: 10001;
+  display:flex;
+  justify-content: center;
+  align-items: center;
+  display:flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.restart {
+  display:none;
+}
+
+.greenWins {
+  display:none;
+}
+
+.blackWins {
+  display:none;
+}
+
+button {
+  font-size: 3vw;
+  font-family: "eurostile", sans-serif;
+  color:#D9D6A2;
+  background-color: #401B2C;
+  padding: 1vw;
+  border-radius: 1rem;
+}
+
+button:hover {
+  cursor: pointer;
+}
+
+button:focus {
+  outline: none;
+  background-color: #D9D6A2;
+  color: #401B2C;
+}
+
 
 .boardWrapper {
   width: 88vh;
@@ -38,8 +86,16 @@
   /* grid-template-rows: repeat(8,1fr); */
 }
 
-.chess {
+/* .chess {
   color:white;
+} */
+
+.blackChess {
+  background: radial-gradient(circle at 55% 15%, white 1px, rgb(13, 14, 13) 5%, black 60%, rgb(171, 172, 166) 100%);  
+}
+
+.greenChess {
+  background: radial-gradient(circle at 55% 15%, white 1px, rgb(6, 71, 11) 5%, green 60%, #B5FFBB 100%);  
 }
 
 .isValidPath {
