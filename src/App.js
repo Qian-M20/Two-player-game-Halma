@@ -77,8 +77,8 @@ class App extends Component {
             // border: "1px solid black",
             backgroundColor: "green",
             zIndex:2,
-            top: `${(y-1)*10}vh`,
-            left: `${(x-1)*10}vh`,
+            top: `${(y-1)*10+0.5}vh`,
+            left: `${(x-1)*10+0.5}vh`,
             position:`absolute`,
             transformOrigin: `${(x-1)*10}vh ${(x-1)*10}vh`
           }
