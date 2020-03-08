@@ -25,6 +25,7 @@ class App extends Component {
     this.state = {
       spaces:[],
       chesses:[],
+      zones:[],
     }
   }
 
@@ -59,14 +60,40 @@ class App extends Component {
 
   getChesses = () => {
     let chesses = [];
+    let zones =[];
     for (let y=1; y<5; y++) {
       for (let x=1; x<(6-y); x++){
+
+        // set up the zones for green area
+        zones.push({
+          key: `zone-${x}-${y}`,
+          // the locationX and locationY needs to be dynamically changed
+          className: `zone greenZone`,
+          locationX: x,
+          locationY: y,
+          currentX: x,
+          currentY: y,
+          style:{
+            width:`9vh`,
+            height:`9vh`,
+            margin: `0 auto`,
+            backgroundColor: "#B2D977",
+            zIndex:0,
+            top: `${(y-1)*10+0.5}vh`,
+            left: `${(x-1)*10+0.5}vh`,
+            position:`absolute`,
+          }
+        });
+
+        // set up the chesses for green area
         chesses.push({
           key: `chess-${x}-${y}`,
           // the locationX and locationY needs to be dynamically changed
           isSelected:false,
+          isMoved:false,
           className: `chess greenChess`,
-          value:'green',
+          value:'Green',
+          OppoValue:'Black',
           locationX: x,
           locationY: y,
           currentX: x,
@@ -79,7 +106,7 @@ class App extends Component {
             borderRadius: `50%`,
             // border: "1px solid black",
             backgroundColor: "green",
-            zIndex:2,
+            zIndex:3,
             top: `${(y-1)*10+0.5}vh`,
             left: `${(x-1)*10+0.5}vh`,
             position:`absolute`,
@@ -91,12 +118,35 @@ class App extends Component {
 
     for (let y=5; y<9; y++) {
       for (let x=8; x>(12-y); x--){
+
+        zones.push({
+          key: `zone-${x}-${y}`,
+          // the locationX and locationY needs to be dynamically changed
+          className: `zone blackZone`,
+          locationX: x,
+          locationY: y,
+          currentX: x,
+          currentY: y,
+          style:{
+            width:`9vh`,
+            height:`9vh`,
+            margin: `0 auto`,
+            backgroundColor: "#8C8C8C",
+            zIndex:0,
+            top: `${(y-1)*10+0.5}vh`,
+            left: `${(x-1)*10+0.5}vh`,
+            position:`absolute`,
+          }
+        });
+
         chesses.push({
           key: `chess-${x}-${y}`,
           // the locationX and locationY needs to be dynamically changed
           className: `chess blackChess`,
+          isMoved:false,
           isSelected:false,
-          value:`black`,
+          value:`Black`,
+          OppoValue:'Green',
           locationX: x,
           locationY: y,
           currentX: x,
@@ -109,9 +159,9 @@ class App extends Component {
             borderRadius: `50%`,
             // border: "1px solid black",
             backgroundColor: "black",
-            zIndex:2,
-            top: `${(y-1)*10}vh`,
-            left: `${(x-1)*10}vh`,
+            zIndex:3,
+            top: `${(y-1)*10+0.5}vh`,
+            left: `${(x-1)*10+0.5}vh`,
             position:`absolute`,
             // transformOrigin: `(${locationX}-1)vh ${(locationY-1)*10}vh`
             transformOrigin: `${(x-1)*10}vh ${(y-1)*10}vh`
@@ -119,11 +169,16 @@ class App extends Component {
         })
       }
     }
-    return {chesses};
+    return {chesses,zones};
   }
 
   chessMoveTo = (locationX, locationY, isValidPath) => (e) => {
-    
+      // change the instruction text 
+    const instruTitle = document.querySelector('.instruTitle');
+    const instruction = document.querySelector('.instruction');
+
+    instruTitle.innerHTML = 
+    `<p>Click the chess to see the valid path<p>`;
 
       // if the space is valid, get the x and y distance and file the animation event
       theMoveToX = locationX;
@@ -139,14 +194,25 @@ class App extends Component {
             // change the state of the selected Chess, so that the caculation of valid spaces points can be updated
           this.setState({
             chesses: this.state.chesses.map((chess)=>{
+              chess.isMoved = false;
               if(chess.isSelected === true){
                 chess.currentX = locationX;
                 chess.currentY = locationY;
+                chess.isMoved = true;
               }
               return chess;
             }) 
           })
-  
+          
+        // update the instruction 
+        const instruction = document.querySelector('.instruction');
+          // find out the one that's being moved
+          this.state.chesses.map((chess)=> {
+            if(chess.isMoved === true) {
+              instruction.innerHTML = `${chess.OppoValue}'s turn!`
+            }
+          })
+
         // update the isValidPath state of spaces
         this.setState({
           spaces: this.state.spaces.map((space)=>{
@@ -155,17 +221,22 @@ class App extends Component {
             return space;
           })
         });
-      }else {
-        alert('this is not a valid move!');
       }
-    } else {
-      alert('Please select the chess first!');
-    }
+
+    } 
     
 
   }
 
-  selectChess = (key,locationX, locationY, currentX, currentY) => (e) => {
+  selectChess = (key,locationX, locationY, currentX, currentY, value) => (e) => {
+    // change the instruction text
+    const instruction = document.querySelector('.instruction');
+    instruction.innerHTML = `
+                            <p>You can move to an adjacent space or jump over a single adjacent piece<p>
+                            <span>Try multiple jump over ☺ <span>`;
+
+    const instruTitle = document.querySelector('.instruTitle');
+    instruTitle.innerHTML = "Click on the valid space to move your chess";
 
     // indicate which chess is being selected
     const selectedChess = document.querySelector(`.selectedChess`);
@@ -431,8 +502,10 @@ class App extends Component {
       for (let x=1; x<(6-y); x++){
           const theSpace = this.state.spaces.filter( space => space.locationX === x && space.locationY === y);
           // console.log(theSpace);
-          if(theSpace[0].isOccupied && theSpace[0].value === 'black') {
+          if(theSpace[0].isOccupied && theSpace[0].value === 'Black') {
             blackBonusPoints ++;
+            // console.log(`blackpionts: ${blackBonusPoints}`);
+
           }
       }
     }
@@ -441,8 +514,9 @@ class App extends Component {
       for (let x=8; x>(12-y); x--){
           const theSpace = this.state.spaces.filter( space => space.locationX === x && space.locationY === y);
           // console.log(theSpace);
-          if(theSpace[0].isOccupied && theSpace[0].value === 'green') {
+          if(theSpace[0].isOccupied && theSpace[0].value === 'Green') {
             greenBonusPoints ++;
+            // console.log(`greenPoints: ${greenBonusPoints}`);
           }
       }
     }
@@ -472,8 +546,34 @@ class App extends Component {
 
     // check winners constantly
     setInterval(this.checkIfWinner, 100);
+
+    // initilize the content in instruction card
+    const ruleBtn = document.querySelector('.ruleBtn');
+    ruleBtn.value = "GAME RULES";
+
+    const instruction = document.querySelector('.instruction');
+    instruction.innerHTML = "";
+
+    const instruTitle = document.querySelector('.instruTitle');
+    instruTitle.innerHTML = 
+    `<p>Let's Play Halma! <p>`;
+
+
   }
 
+
+  displayRules() {
+    const gameruls = document.querySelector('.gameruls');
+    const ruleBtn = document.querySelector('.ruleBtn');
+    if (gameruls.style.display === "none") {
+      gameruls.style.display = "block";
+      ruleBtn.value = "HIDE RULES";
+    } else {
+      gameruls.style.display = "none";
+      ruleBtn.value = "GAME RULES";
+    }
+
+  }
 
   gameStart() {
     const wallPaper = document.querySelector('.wallPaper');
@@ -486,6 +586,10 @@ class App extends Component {
     greenWins = false;
     blackWins = false;
 
+    // change the text in the instruction cards
+    const instruTitle = document.querySelector('.instruTitle');
+    instruTitle.innerHTML = 
+    `<p>Click the chess to see the valid path<p>`;
   }
 
   gameOver() {
@@ -514,7 +618,7 @@ class App extends Component {
 
 
   render() {
-    let {spaces, chesses} = this.state;
+    let {spaces, chesses, zones} = this.state;
     let positionSpaces = spaces.map((space,index)=> { 
       let {key, style, locationX, locationY, className, isValidPath} = space;
       let reactDom = <div
@@ -529,11 +633,25 @@ class App extends Component {
     });
 
     let positionChesses = chesses.map((chess,index)=> { 
-      let {key, style, locationX, locationY, currentX, currentY, className} = chess;
+      let {key, style, locationX, locationY, currentX, currentY, className, value} = chess;
       let reactDom = <div
+          value = {value}
           key={key}
           className={className}
           onClick={this.selectChess(key,locationX,locationY, currentX, currentY)}
+          style={{...style
+          }}
+        >
+          {/* {key} */}
+        </div >
+      return reactDom;
+    })
+
+    let positionZones = zones.map((zone,index)=> { 
+      let {key, style, className} = zone;
+      let reactDom = <div
+          key={key}
+          className={className}
           style={{...style
           }}
         >
@@ -547,15 +665,29 @@ class App extends Component {
         <div className="wallPaper">
           <h1 className="greenWins">Congrats! Green Wins!</h1>
           <h1 className="blackWins">Congrats! Black Wins!</h1>
-          <button className="start" onClick={this.gameStart}>PRESS START</button>
-          <button className="restart" onClick={this.gameRestart}>RESTART</button>
+          <button className="start wallBtn" onClick={this.gameStart}>PRESS START</button>
+          <button className="restart wallBtn" onClick={this.gameRestart}>RESTART</button>
         </div>
 
         <div className="boardWrapper">
           <div className="board">
               {positionSpaces}
               {positionChesses}
+              {positionZones}
           </div>
+        </div>
+
+        <div className="rule">
+            <h1 className="instruTitle"></h1>
+            <div className="instruction"></div>
+            <div className="gameRules">
+              <input className="ruleBtn" type="button" onClick={this.displayRules}></input>
+            </div>
+            <ul className="gameruls">
+              <li>(i) A piece may be moved to an adjacent square, horizontally, vertically or diagonally;</li>
+              <li>(ii) A piece may jump over a single adjacent piece of any colour, horizontally, vertically or diagonally, into the empty square beyond. Multiple jump over is allowable, as long as it is consistent.</li>
+              <li>(iii) The game is over when a player has moved all of his pieces into his opponent's marked starting positions</li>
+            </ul>
         </div>
       </div>
     );

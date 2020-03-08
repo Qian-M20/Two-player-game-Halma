@@ -8,10 +8,10 @@
 .App {
   width:100vw;
   height:100vh;
-  display:flex;
-  justify-content: center;
-  align-items: center;
-  background: url(./bg.png);
+  display:grid;
+  grid-template-columns: 1fr 7fr 4fr 1fr;
+  grid-template-rows: 1fr 6fr 1fr;
+  background: black;
   background-repeat: no-repeat;
   background-size: cover;
 }
@@ -43,7 +43,7 @@
   display:none;
 }
 
-button {
+button.wallBtn {
   font-size: 3vw;
   font-family: "eurostile", sans-serif;
   color:#D9D6A2;
@@ -52,11 +52,11 @@ button {
   border-radius: 1rem;
 }
 
-button:hover {
+button.wallBtn:hover {
   cursor: pointer;
 }
 
-button:focus {
+button.wallBtn:focus {
   outline: none;
   background-color: #D9D6A2;
   color: #401B2C;
@@ -64,6 +64,8 @@ button:focus {
 
 
 .boardWrapper {
+  grid-column: 2/3;
+  grid-row: 2/3;
   width: 88vh;
   height:88vh;
   border: 2vh solid #FFCA40;
@@ -106,4 +108,87 @@ button:focus {
 
 .selectedChess {
   box-shadow: 0px 0px 10px 5px gray;
+}
+
+.rule {
+  border-radius: 1rem;
+  background-color: #262626;
+  border:3px dashed #F2DCC9;
+  grid-column: 3/4;
+  grid-row: 2/3;
+  display:grid;
+  /* grid-template-rows: 2fr 2fr 2fr 6fr 1fr; */
+  /* grid-gap:1em; */
+  padding-left:2em;
+  padding-right:2em;
+}
+
+.rule h1 {
+  /* grid-row: 1/2; */
+  text-align: center;
+  font-family: "eurostile", sans-serif;
+  color:#f32f66;
+  display:grid;
+  align-content: center;
+  font-size:3vw;
+
+}
+
+.rule div {
+  /* grid-row:2/3; */
+  display:grid;
+  align-content: center;
+  text-align: center;
+}
+
+div.gameRules{
+  margin: 0 auto;
+  /* grid-row: 3/4; */
+  color: #F25C05;
+  text-align: center;
+  /* display: grid; */
+  /* align-content: center; */
+  /* background-color: bisque; */
+}
+
+.instruction {
+  color:white;
+  font-size:2vw;
+}
+.instruction span {
+  display:block;
+  margin-top:2vw;
+  color: #0396A6;
+}
+
+.gameRules input {
+  color:#943C19;
+  font-weight: bolder;
+  text-align: center;
+  display:grid;
+  align-content: center;
+  font-size:1.2vw;
+  padding:0.5rem;
+  background-color: #F2DCC9;
+  border-radius: 0.5rem;
+}
+
+.gameRules input:hover {
+  cursor: pointer;
+}
+
+.gameRules input:focus {
+  outline:none;
+}
+
+.rule ul {
+  /* grid-row: 4/5; */
+  list-style-type: none;
+  display:none;
+}
+
+.rule ul li {
+  margin-top: 1em;
+  font-size:1.2vw;
+  color:#F2DCC9;
 }
