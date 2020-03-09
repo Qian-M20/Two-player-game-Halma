@@ -20,7 +20,7 @@
   width:100vw;
   height:100vh;
   position: absolute;
-  background-color: rgba(250,250,250,.5);
+  /* background-color: rgba(250,250,250,.5); */
   z-index: 10001;
   display:flex;
   justify-content: center;
@@ -37,10 +37,18 @@
 
 .greenWins {
   display:none;
+  margin-bottom:1em;
+  font-size:4em;
+  color: green;
+  font-weight: bolder;
 }
 
 .blackWins {
   display:none;
+  margin-bottom:1em;
+  font-size:4em;
+  color: black;
+  font-weight: bolder;
 }
 
 button.wallBtn {
