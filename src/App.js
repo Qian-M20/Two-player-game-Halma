@@ -15,6 +15,8 @@ let adjSpaces = [];
 let nextValidPath = [];
 let greenWins = false;
 let blackWins = false;
+let activeChesses;
+let nonActiveChesses;
 
 
 
@@ -91,7 +93,7 @@ class App extends Component {
           // the locationX and locationY needs to be dynamically changed
           isSelected:false,
           isMoved:false,
-          className: `chess greenChess`,
+          className: `chess Green`,
           value:'Green',
           OppoValue:'Black',
           locationX: x,
@@ -142,7 +144,7 @@ class App extends Component {
         chesses.push({
           key: `chess-${x}-${y}`,
           // the locationX and locationY needs to be dynamically changed
-          className: `chess blackChess`,
+          className: `chess Black`,
           isMoved:false,
           isSelected:false,
           value:`Black`,
@@ -204,12 +206,14 @@ class App extends Component {
             }) 
           })
           
-        // update the instruction 
+        // update the instruction and disable chesses 
         const instruction = document.querySelector('.instruction');
           // find out the one that's being moved
           this.state.chesses.map((chess)=> {
             if(chess.isMoved === true) {
-              instruction.innerHTML = `${chess.OppoValue}'s turn!`
+              instruction.innerHTML = `${chess.OppoValue}'s turn!`;
+              activeChesses = `${chess.OppoValue}`;
+              nonActiveChesses = `${chess.value}`;
             }
           })
 
@@ -221,6 +225,18 @@ class App extends Component {
             return space;
           })
         });
+
+        // if one chess is moved, disable its group of chess and enable its opponent chesses
+        this.setState({
+          chesses: this.state.chesses.map((chess) => {
+            if(chess.OppoValue === activeChesses){
+              chess.className = `chess ${nonActiveChesses} disabled`;
+            }else {
+              chess.className = `chess ${activeChesses}`;
+            }
+            return chess;
+          })
+        })
       }
 
     } 
@@ -233,7 +249,7 @@ class App extends Component {
     const instruction = document.querySelector('.instruction');
     instruction.innerHTML = `
                             <p>You can move to an adjacent space or jump over a single adjacent piece<p>
-                            <span>Try multiple jump over ☺ <span>`;
+                            `;
 
     const instruTitle = document.querySelector('.instruTitle');
     instruTitle.innerHTML = "Click on the valid space to move your chess";
@@ -563,13 +579,13 @@ class App extends Component {
 
 
   displayRules() {
-    const gameruls = document.querySelector('.gameruls');
+    const gameRuleDetail = document.querySelector('.gameRuleDetail');
     const ruleBtn = document.querySelector('.ruleBtn');
-    if (gameruls.style.display === "none") {
-      gameruls.style.display = "block";
+    if (gameRuleDetail.style.display === "none") {
+      gameRuleDetail.style.display = "block";
       ruleBtn.value = "HIDE RULES";
     } else {
-      gameruls.style.display = "none";
+      gameRuleDetail.style.display = "none";
       ruleBtn.value = "GAME RULES";
     }
 
@@ -678,17 +694,20 @@ class App extends Component {
         </div>
 
         <div className="rule">
+            <h1 className="gameTitle">Halma</h1>
             <h1 className="instruTitle"></h1>
             <div className="instruction"></div>
             <div className="gameRules">
               <input className="ruleBtn" type="button" onClick={this.displayRules}></input>
             </div>
-            <ul className="gameruls">
+            <ul className="gameRuleDetail">
               <li>(i) A piece may be moved to an adjacent square, horizontally, vertically or diagonally;</li>
               <li>(ii) A piece may jump over a single adjacent piece of any colour, horizontally, vertically or diagonally, into the empty square beyond. Multiple jump over is allowable, as long as it is consistent.</li>
               <li>(iii) The game is over when a player has moved all of his pieces into his opponent's marked starting positions</li>
             </ul>
         </div>
+
+        
       </div>
     );
   }

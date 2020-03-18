@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css?family=Roboto+Slab:900&display=swap');
+
 * {
   margin:0;
   padding:0;
@@ -100,11 +102,19 @@ button.wallBtn:focus {
   color:white;
 } */
 
-.blackChess {
+.Black {
   background: radial-gradient(circle at 55% 15%, white 1px, rgb(13, 14, 13) 5%, black 60%, rgb(171, 172, 166) 100%);  
 }
 
-.greenChess {
+.Black.disabled {
+  pointer-events:none;
+}
+
+.Green.disabled {
+  pointer-events:none;
+}
+
+.Green {
   background: radial-gradient(circle at 55% 15%, white 1px, rgb(6, 71, 11) 5%, green 60%, #B5FFBB 100%);  
 }
 
@@ -119,41 +129,68 @@ button.wallBtn:focus {
 }
 
 .rule {
+  /* height:80vh; */
   border-radius: 1rem;
   background-color: #262626;
   border:3px dashed #F2DCC9;
   grid-column: 3/4;
   grid-row: 2/3;
   display:grid;
-  /* grid-template-rows: 2fr 2fr 2fr 6fr 1fr; */
+  grid-template-rows: 2fr 2fr 4fr 1fr;
   /* grid-gap:1em; */
   padding-left:2em;
   padding-right:2em;
+  position: relative;
 }
 
-.rule h1 {
-  /* grid-row: 1/2; */
+.rule div {
+  display:grid;
+  align-content: center;
+  text-align: center;
+}
+
+.gameTitle {
+  grid-row: 1/2;
+  /* margin-top:5%; */
+  text-align: center;
+  display:grid;
+  align-content: center;
+  font-size:6vw;
+  color:#140100;
+  font-family: 'Roboto Slab', serif;
+  -webkit-text-stroke-width: 2px;
+  -webkit-text-stroke-color: #630A09;
+
+}
+
+.instruTitle {
+  grid-row: 2/3;
+  text-align: center;
+  font-family: "eurostile", sans-serif;
+  color:#F25C05;
+  display:grid;
+  align-content: center;
+  font-size:2vw;
+}
+
+.instruction {
+  grid-row: 3/4;
   text-align: center;
   font-family: "eurostile", sans-serif;
   color:#f32f66;
   display:grid;
   align-content: center;
-  font-size:3vw;
-
+  font-size:2vw;
 }
 
-.rule div {
-  /* grid-row:2/3; */
-  display:grid;
-  align-content: center;
-  text-align: center;
-}
 
 div.gameRules{
+  grid-row: 4/5;
   margin: 0 auto;
   /* grid-row: 3/4; */
   color: #F25C05;
   text-align: center;
+  z-index:10002;
   /* display: grid; */
   /* align-content: center; */
   /* background-color: bisque; */
@@ -166,7 +203,7 @@ div.gameRules{
 .instruction span {
   display:block;
   margin-top:2vw;
-  color: #0396A6;
+  color: #f32f66;
 }
 
 .gameRules input {
@@ -190,13 +227,18 @@ div.gameRules{
 }
 
 .rule ul {
-  /* grid-row: 4/5; */
   list-style-type: none;
   display:none;
+  position: absolute;
+  height:100%;
+  background-color: rgba(0,0,0,1);
 }
+
 
 .rule ul li {
   margin-top: 1em;
-  font-size:1.2vw;
+  font-size:1.5vw;
   color:#F2DCC9;
+  padding:1.2em;
+  
 }
