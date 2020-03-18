@@ -43,6 +43,7 @@
   font-size:4em;
   color: green;
   font-weight: bolder;
+  background-color:rgba(255,255,255,0.9);
 }
 
 .blackWins {
@@ -51,6 +52,7 @@
   font-size:4em;
   color: black;
   font-weight: bolder;
+  background-color:rgba(255,255,255,0.9);
 }
 
 button.wallBtn {
