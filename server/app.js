@@ -7,6 +7,7 @@ Http.listen(3000, () => {
 });
 
 const connections = [null, null];
+const players = [null, null];
 
 Socketio.on('connection', function(socket){
     /********************** handle a socket connection request from web client ***********************/
@@ -41,16 +42,40 @@ Socketio.on('connection', function(socket){
     });
 
      /********************** handling game start ***********************/
-     socket.on('gameStart', function(data){
+    socket.on('gameStart', function(data){
         socket.broadcast.emit('informRole', data);
+        console.log(data.player);
+        if(players[0] === null){
+            players[0] = data.player;
+            console.log(players);
+        } else {
+            players[1] = data.player;
+            console.log(players);
+        }
+    
+        if(players[0] === 'black' && players[1] === 'green'){
+            if(data.player === 'black'){
+                socket.emit('unFreezeScreen');
+            }else if(data.player === 'green') {
+                socket.broadcast.emit('unFreezeScreen');
+            }
+        }
+
+        if(players[1] === 'black' && players[0] === 'green'){
+            if(data.player === 'black'){
+                socket.emit('unFreezeScreen');
+            }else if(data.player === 'green') {
+                socket.broadcast.emit('unFreezeScreen');
+            }
+        }
     });
 
     /********************** handling disconnects ***********************/
     socket.on('disconnect', function(){
         socket.broadcast.emit('player-disconnect', playerIndex);
-        connections[playerIndex] = null;   
+        connections[playerIndex] = null;  
+        players[playerIndex] = null;  
         console.log(`player ${playerIndex} disconnect`);
-
     });
 
 })

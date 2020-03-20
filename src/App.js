@@ -16,9 +16,11 @@ let greenWins = false;
 let blackWins = false;
 let activeChesses;
 let nonActiveChesses;
+let playerRole;
 let socket; 
 const endPoint = 'localhost:3000';
 socket= io(endPoint);
+
 
 
 
@@ -578,7 +580,6 @@ class App extends Component {
     const greenWinMsg = document.querySelector('.greenWins');
     const playerConncect = document.querySelector('.player-connect');
     
-    wallPaper.style.display = 'none';
     blackWinMsg.style.display = 'none';
     greenWinMsg.style.display = 'none';
     playerConncect.style.display = 'none';
@@ -589,25 +590,32 @@ class App extends Component {
     const instruTitle = document.querySelector('.instruTitle');
     // socket emmit 
     if(e.target.id === 'greenPlayer'){
-      // if it's a green player, freeze the screen
+      playerRole = 'Green';
       socket.emit('gameStart', {
         player: 'green'
       });
       instruTitle.innerHTML = `<p>Your Are Green Player<p>`;
-      document.querySelector('.wallPaper').style.display = 'flex';
       document.querySelectorAll('.start').forEach((e) => {
           e.style.display = 'none';
       }) 
       document.querySelector('.restart').style.display = 'none';
-
+      // if it's a green player, freeze the black section
+      document.querySelectorAll('.Black').forEach((e)=> {
+        e.style.pointerEvents = 'none';
+      })
     }else {
+      playerRole = 'Black';
       socket.emit('gameStart', {
         player: 'black'
       });
       instruTitle.innerHTML = `<p>Your Are Black Player<p>`;
+      document.querySelectorAll('.start').forEach((e) => {
+          e.style.display = 'none';
+      }) 
+      document.querySelector('.restart').style.display = 'none';
       // if it's a black player, freeze the green section
       document.querySelectorAll('.Green').forEach((e)=> {
-         e.style.pointerEvents = 'none';
+          e.style.pointerEvents = 'none';
       })
     }
     
@@ -717,15 +725,18 @@ handleMove = (data) => {
 
   playConnect = () => {
     document.querySelector('.player-connect').innerHTML = 'The room has two players, ready to start the game';
+    document.querySelector('.blackPlayer').style.pointerEvents = 'auto';
+    document.querySelector('.greenPlayer').style.pointerEvents = 'auto';
   }
 
 
   playDisconnect = () => {
     document.querySelector('.player-connect').style.display = 'block';
     document.querySelector('.player-connect').innerHTML = 'Your partner player left the room... game stopped';
-    // document.querySelector('.wallPaper').style.display = 'flex';
-    // document.querySelector('.start').style.display = 'none';
-    // document.querySelector('.restart').style.display = 'block';
+    document.querySelector('.wallPaper').style.display = 'flex';
+    document.querySelector('.greenPlayer').style.display = 'none';
+    document.querySelector('.blackPlayer').style.display = 'none';
+    document.querySelector('.restart').style.display = 'block';
   }
 
   freezeScreen = ()=> {
@@ -738,37 +749,20 @@ handleMove = (data) => {
 
   unFreezeScreen = ()=> {
     document.querySelector('.wallPaper').style.display = 'none';
+    const instruction = document.querySelector('.instruction');
+    instruction.style.display = 'block';
+    instruction.innerHTML = `${playerRole}'s turn!`;
   }
 
   informRole = (data) => {
-    document.querySelectorAll('.start').forEach((e) => {
-      e.style.display = 'none';
-    });  
-    document.querySelector('.player-connect').style.display = "none";
-    document.querySelector('.wallPaper').style.display = "none";
-
-    // indicate the opponent user what player they are 
+    
+    // indicate the opponent user what player option left
     if(data.player == 'green'){
-        document.querySelector('.instruTitle').innerHTML = 'You Are Black Player';
-        // if it's a black player, freeze the green section 
-        this.setState({
-          chesses: this.state.chesses.map((chess) => {
-            if(chess.OppoValue === 'Black'){
-              chess.className = `chess Green disabled`;
-            }
-            return chess;
-          })
-        });
+        document.querySelector('.greenPlayer').style.display = 'none';
     }else if (data.player === 'black') {
-      document.querySelector('.instruTitle').innerHTML = 'You Are Green Player';
-      // if it's green player, freezeScreen 
-      this.freezeScreen();
+      document.querySelector('.blackPlayer').style.display = 'none';
     }
-
-
   }
-
-
 
   render() {
     let {spaces, chesses, zones} = this.state;

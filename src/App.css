@@ -24,7 +24,6 @@
   position: absolute;
   /* background-color: rgba(250,250,250,.5); */
   z-index: 10001;
-  display:flex;
   justify-content: center;
   align-items: center;
   display:flex;
@@ -71,6 +70,8 @@ button.greenPlayer {
   background-color: green;
   color:white;
   margin-left: -25%;
+  pointer-events: none;
+
 }
 
 button.blackPlayer {
@@ -80,7 +81,7 @@ button.blackPlayer {
   background-color: black;
   color:white;
   margin-left: -25%;
-
+  pointer-events: none;
 }
 
 button.wallBtn:hover {
