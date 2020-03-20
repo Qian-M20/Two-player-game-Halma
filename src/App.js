@@ -1,8 +1,8 @@
-import React, {Component} from 'react';
+import React, {Component, useEffect} from 'react';
 import './App.css';
-// import logo from './logo.svg'
+import io from 'socket.io-client';
 
-
+// define variable for game playing process
 let distanceX;
 let distanceY;
 let theOriginalX;
@@ -10,13 +10,15 @@ let theOriginalY;
 let theMoveToX;
 let theMoveToY;
 let occupiedSpaces=[];
-// let validPath = [];
 let adjSpaces = [];
 let nextValidPath = [];
 let greenWins = false;
 let blackWins = false;
 let activeChesses;
 let nonActiveChesses;
+let socket; 
+const endPoint = 'localhost:3000';
+socket= io(endPoint);
 
 
 
@@ -29,6 +31,7 @@ class App extends Component {
       chesses:[],
       zones:[],
     }
+
   }
 
   // all methods of the app component go in this section
@@ -177,8 +180,6 @@ class App extends Component {
   chessMoveTo = (locationX, locationY, isValidPath) => (e) => {
       // change the instruction text 
     const instruTitle = document.querySelector('.instruTitle');
-    const instruction = document.querySelector('.instruction');
-
     instruTitle.innerHTML = 
     `<p>Click the chess to see the valid path<p>`;
 
@@ -191,7 +192,14 @@ class App extends Component {
       if (selectedChess) {
         // find out if the clicked space is valid
         if (isValidPath === true) {
-          selectedChess.style.transform = "translate3d(" + distanceX + "vh, " + distanceY + "vh, 0)";
+          socket.emit('chessMove', {
+            id: selectedChess.id,
+            distanceX:distanceX,
+            distanceY:distanceY,
+            newLocationX: theMoveToX,
+            newLocationY: theMoveToY
+          });
+
           selectedChess.classList.remove('selectedChess');
             // change the state of the selected Chess, so that the caculation of valid spaces points can be updated
           this.setState({
@@ -204,7 +212,7 @@ class App extends Component {
               }
               return chess;
             }) 
-          })
+          });
           
         // update the instruction and disable chesses 
         const instruction = document.querySelector('.instruction');
@@ -294,7 +302,7 @@ class App extends Component {
       return true;
     }
   }
- 
+
 
   // occupiedCheck to see if the spaces is occupied or not, if not, than make the space valid, if it is occupied, then nothing happend
   occupiedCheck = (array) => {
@@ -550,6 +558,86 @@ class App extends Component {
     }
     
   }
+  
+  displayRules() {
+    const gameRuleDetail = document.querySelector('.gameRuleDetail');
+    const ruleBtn = document.querySelector('.ruleBtn');
+    if (gameRuleDetail.style.display === "none") {
+      gameRuleDetail.style.display = "block";
+      ruleBtn.value = "HIDE RULES";
+    } else {
+      gameRuleDetail.style.display = "none";
+      ruleBtn.value = "GAME RULES";
+    }
+
+  }
+
+  gameStart(e) {
+    const wallPaper = document.querySelector('.wallPaper');
+    const blackWinMsg = document.querySelector('.blackWins');
+    const greenWinMsg = document.querySelector('.greenWins');
+    const playerConncect = document.querySelector('.player-connect');
+    
+    wallPaper.style.display = 'none';
+    blackWinMsg.style.display = 'none';
+    greenWinMsg.style.display = 'none';
+    playerConncect.style.display = 'none';
+    greenWins = false;
+    blackWins = false;
+
+    // change the text in the instruction cards
+    const instruTitle = document.querySelector('.instruTitle');
+    // socket emmit 
+    if(e.target.id === 'greenPlayer'){
+      // if it's a green player, freeze the screen
+      socket.emit('gameStart', {
+        player: 'green'
+      });
+      instruTitle.innerHTML = `<p>Your Are Green Player<p>`;
+      document.querySelector('.wallPaper').style.display = 'flex';
+      document.querySelectorAll('.start').forEach((e) => {
+          e.style.display = 'none';
+      }) 
+      document.querySelector('.restart').style.display = 'none';
+
+    }else {
+      socket.emit('gameStart', {
+        player: 'black'
+      });
+      instruTitle.innerHTML = `<p>Your Are Black Player<p>`;
+      // if it's a black player, freeze the green section
+      document.querySelectorAll('.Green').forEach((e)=> {
+         e.style.pointerEvents = 'none';
+      })
+    }
+    
+  }
+
+  gameOver() {
+    const wallPaper = document.querySelector('.wallPaper');
+    const blackWinMsg = document.querySelector('.blackWins');
+    const greenWinMsg = document.querySelector('.greenWins');
+    const restart = document.querySelector('.restart');
+
+    wallPaper.style.display = 'flex';
+    restart.style.display = 'block';
+
+    document.querySelectorAll('.start').forEach((e) => {
+      e.style.display = 'none';
+    }) 
+
+    if (blackWins) {
+      blackWinMsg.style.display = 'block';
+    }
+    if (greenWins) {
+      greenWinMsg.style.display = 'block';
+    }
+
+  }
+
+  gameRestart() {
+    window.location.reload(false);
+  }
 
   componentDidMount() {
     this.setState({
@@ -574,63 +662,112 @@ class App extends Component {
     instruTitle.innerHTML = 
     `<p>Let's Play Halma! <p>`;
 
+    // listerning to socket events -- chess moving 
+    socket.on('chessMove', this.handleMove);
 
-  }
-
-
-  displayRules() {
-    const gameRuleDetail = document.querySelector('.gameRuleDetail');
-    const ruleBtn = document.querySelector('.ruleBtn');
-    if (gameRuleDetail.style.display === "none") {
-      gameRuleDetail.style.display = "block";
-      ruleBtn.value = "HIDE RULES";
-    } else {
-      gameRuleDetail.style.display = "none";
-      ruleBtn.value = "GAME RULES";
-    }
-
-  }
-
-  gameStart() {
-    const wallPaper = document.querySelector('.wallPaper');
-    const blackWinMsg = document.querySelector('.blackWins');
-    const greenWinMsg = document.querySelector('.greenWins');
+    // listerning to socket events -- rival player enter
+    socket.on('player-connect', this.playConnect);
     
-    wallPaper.style.display = 'none';
-    blackWinMsg.style.display = 'none';
-    greenWinMsg.style.display = 'none';
-    greenWins = false;
-    blackWins = false;
+    // listerning to socket events -- rival player left
+    socket.on('player-disconnect', this.playDisconnect);
 
-    // change the text in the instruction cards
-    const instruTitle = document.querySelector('.instruTitle');
-    instruTitle.innerHTML = 
-    `<p>Click the chess to see the valid path<p>`;
+    // listerning to socket events -- freezeScreen
+    socket.on('freezeScreen', this.freezeScreen);
+
+    // listerning to socket events -- unfreezeScreen
+    socket.on('unFreezeScreen', this.unFreezeScreen);
+
+    // listerning to socket events -- informRole
+    socket.on('informRole', this.informRole);
+    
   }
 
-  gameOver() {
-    const wallPaper = document.querySelector('.wallPaper');
-    const blackWinMsg = document.querySelector('.blackWins');
-    const greenWinMsg = document.querySelector('.greenWins');
-    const restart = document.querySelector('.restart');
-    const start = document.querySelector('.start');
+/********************************* define socket events ********************************************************/
+handleMove = (data) => {
+  document.querySelector(`#${data.id}`).style.transform = "translate3d(" + data.distanceX + "vh, " + data.distanceY + "vh, 0)";
+  console.log('moved');
+  this.setState({
+        chesses: this.state.chesses.map((chess)=>{
+          chess.isMoved = false;
+          if(chess.key == data.id){
+            chess.currentX = data.newLocationX;
+            chess.currentY = data.newLocationY;
+            chess.isMoved = true;
+            const instruction = document.querySelector('.instruction');
+            instruction.innerHTML = `${chess.OppoValue}'s turn!`;
+            activeChesses = `${chess.OppoValue}`;
+            nonActiveChesses = `${chess.value}`;
+          }
+          return chess;
+        }) 
+  });
 
-    wallPaper.style.display = 'flex';
-    restart.style.display = 'block';
-    start.style.display = 'none';
+  this.setState({
+    chesses: this.state.chesses.map((chess) => {
+      if(chess.OppoValue === activeChesses){
+        chess.className = `chess ${nonActiveChesses} disabled`;
+      }else {
+        chess.className = `chess ${activeChesses}`;
+      }
+      return chess;
+    })
+  });
 
-    if (blackWins) {
-      blackWinMsg.style.display = 'block';
+}
+
+  playConnect = () => {
+    document.querySelector('.player-connect').innerHTML = 'The room has two players, ready to start the game';
+  }
+
+
+  playDisconnect = () => {
+    document.querySelector('.player-connect').style.display = 'block';
+    document.querySelector('.player-connect').innerHTML = 'Your partner player left the room... game stopped';
+    // document.querySelector('.wallPaper').style.display = 'flex';
+    // document.querySelector('.start').style.display = 'none';
+    // document.querySelector('.restart').style.display = 'block';
+  }
+
+  freezeScreen = ()=> {
+    document.querySelector('.wallPaper').style.display = 'flex';
+    document.querySelectorAll('.start').forEach((e) => {
+        e.style.display = 'none';
+    }) 
+    document.querySelector('.restart').style.display = 'none';
+  }
+
+  unFreezeScreen = ()=> {
+    document.querySelector('.wallPaper').style.display = 'none';
+  }
+
+  informRole = (data) => {
+    document.querySelectorAll('.start').forEach((e) => {
+      e.style.display = 'none';
+    });  
+    document.querySelector('.player-connect').style.display = "none";
+    document.querySelector('.wallPaper').style.display = "none";
+
+    // indicate the opponent user what player they are 
+    if(data.player == 'green'){
+        document.querySelector('.instruTitle').innerHTML = 'You Are Black Player';
+        // if it's a black player, freeze the green section 
+        this.setState({
+          chesses: this.state.chesses.map((chess) => {
+            if(chess.OppoValue === 'Black'){
+              chess.className = `chess Green disabled`;
+            }
+            return chess;
+          })
+        });
+    }else if (data.player === 'black') {
+      document.querySelector('.instruTitle').innerHTML = 'You Are Green Player';
+      // if it's green player, freezeScreen 
+      this.freezeScreen();
     }
-    if (greenWins) {
-      greenWinMsg.style.display = 'block';
-    }
+
 
   }
 
-  gameRestart() {
-    window.location.reload(false);
-  }
 
 
   render() {
@@ -652,6 +789,7 @@ class App extends Component {
       let {key, style, locationX, locationY, currentX, currentY, className, value} = chess;
       let reactDom = <div
           value = {value}
+          id = {key}
           key={key}
           className={className}
           onClick={this.selectChess(key,locationX,locationY, currentX, currentY)}
@@ -681,7 +819,8 @@ class App extends Component {
         <div className="wallPaper">
           <h1 className="greenWins">Congrats! Green Wins!</h1>
           <h1 className="blackWins">Congrats! Black Wins!</h1>
-          <button className="start wallBtn" onClick={this.gameStart}>PRESS START</button>
+          <button id="blackPlayer" className="start blackPlayer" onClick={this.gameStart}>Play As Black</button>
+          <button id="greenPlayer" className="start greenPlayer" onClick={this.gameStart}>Play As Green</button>
           <button className="restart wallBtn" onClick={this.gameRestart}>RESTART</button>
         </div>
 
@@ -695,6 +834,7 @@ class App extends Component {
 
         <div className="rule">
             <h1 className="gameTitle">Halma</h1>
+            <h3 className="player-connect">Waiting Another Player...</h3>
             <h1 className="instruTitle"></h1>
             <div className="instruction"></div>
             <div className="gameRules">

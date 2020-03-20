@@ -64,6 +64,25 @@ button.wallBtn {
   border-radius: 1rem;
 }
 
+button.greenPlayer {
+  font-size: 2vw;
+  padding: 1vw 2vw;
+  border-radius: 1rem;
+  background-color: green;
+  color:white;
+  margin-left: -25%;
+}
+
+button.blackPlayer {
+  font-size: 2vw;
+  padding: 1vw 2vw;
+  border-radius: 1rem;
+  background-color: black;
+  color:white;
+  margin-left: -25%;
+
+}
+
 button.wallBtn:hover {
   cursor: pointer;
 }
@@ -138,7 +157,7 @@ button.wallBtn:focus {
   grid-column: 3/4;
   grid-row: 2/3;
   display:grid;
-  grid-template-rows: 2fr 2fr 4fr 1fr;
+  grid-template-rows: 2fr 1fr 2fr 4fr 1fr;
   /* grid-gap:1em; */
   padding-left:2em;
   padding-right:2em;
@@ -165,8 +184,14 @@ button.wallBtn:focus {
 
 }
 
-.instruTitle {
+.player-connect {
   grid-row: 2/3;
+  color:white;
+  text-align: center;
+}
+
+.instruTitle {
+  grid-row: 3/4;
   text-align: center;
   font-family: "eurostile", sans-serif;
   color:#F25C05;
@@ -176,7 +201,7 @@ button.wallBtn:focus {
 }
 
 .instruction {
-  grid-row: 3/4;
+  grid-row: 4/5;
   text-align: center;
   font-family: "eurostile", sans-serif;
   color:#f32f66;
@@ -187,7 +212,7 @@ button.wallBtn:focus {
 
 
 div.gameRules{
-  grid-row: 4/5;
+  grid-row: 5/6;
   margin: 0 auto;
   /* grid-row: 3/4; */
   color: #F25C05;
