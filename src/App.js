@@ -18,7 +18,7 @@ let activeChesses;
 let nonActiveChesses;
 let playerRole;
 let socket; 
-const endPoint = 'localhost:3000';
+const endPoint = 'https://react-game-halma.herokuapp.com/';
 socket= io(endPoint);
 
 
@@ -692,7 +692,12 @@ class App extends Component {
 
 /********************************* define socket events ********************************************************/
 handleMove = (data) => {
+  document.querySelectorAll(`.chess`).forEach((chess) => {
+      chess.style.boxShadow = "none";
+  })
+
   document.querySelector(`#${data.id}`).style.transform = "translate3d(" + data.distanceX + "vh, " + data.distanceY + "vh, 0)";
+  document.querySelector(`#${data.id}`).style.boxShadow = "0px 0px 10px 10px orange";
   console.log('moved');
   this.setState({
         chesses: this.state.chesses.map((chess)=>{
